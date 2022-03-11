@@ -128,5 +128,5 @@ def musicBackEnd(request):
 
 
 def index(request):
-    return render(request, "index.html")
+    return render(request, "musicthink.html")
 
