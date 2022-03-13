@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 import random
 from tqdm import tqdm
@@ -73,7 +73,7 @@ def musicBackEnd(request):
         datareader = csv.reader(csvfile)
         next(datareader)
         for row in datareader:
-            print(row[2] + " " + row[1])
+            # print(row[2] + " " + row[1])
 
             if mood_value <= 0.10:
                 if (
@@ -125,7 +125,11 @@ def musicBackEnd(request):
                     break
 
     print(selection)
-
+    file = open('myfile.txt', 'w')
+    file.truncate(0)
+    file.write('Cheese')
+    file.close()
+    return render(request, "musicplayer.html")
 
 def index(request):
     return render(request, "musicthink.html")

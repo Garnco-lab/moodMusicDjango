@@ -19,26 +19,32 @@ recognition.maxAlternatives = 1;
 
 let diagnostic = document.querySelector('.output');
 let bg = document.querySelector('html');
-let hints = document.querySelector('.hints');
+let hints = document.querySelector('.brain_desc');
 
 let colorHTML= '';
 moods.forEach(function(v, i, a){
   console.log(v, i);
   colorHTML += '<span style="background-color:' + v + ';"> ' + v + ' </span>';
 });
-hints.innerHTML = 'Tap/click then say a color to change the background color of the app. Try ' + colorHTML + '.';
+
+
 
 document.body.onclick = function() {
   recognition.start();
-  location.href = "/" + "musicBackEnd";
+
   console.log('Ready to receive a color command.');
+
+  document.getElementById('brain_desc').innerHTML = 'Ask me to play a song thats happy or sad';
+
 }
 
 recognition.onresult = function(event) {
   let color = event.results[0][0].transcript;
-  diagnostic.textContent = 'Result received: ' + color + '.';
-  bg.style.backgroundColor = color;
+  // diagnostic.textContent = 'Result received: ' + color + '.';
+  // bg.style.backgroundColor = color;
   console.log('Confidence: ' + event.results[0][0].confidence, color);
+  document.getElementById('brain_desc').innerHTML = 'Okay let me think about that...';
+  location.href = "/" + "musicBackEnd";
 }
 
 recognition.onspeechend = function() {
