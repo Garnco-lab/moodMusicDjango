@@ -1,6 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
-from json import dumps
 import random
 from tqdm import tqdm
 import pandas as pd
@@ -12,9 +11,15 @@ import urllib.parse
 import urllib.request
 
 
-def musicBackEnd(request):
+def musicBackEnd(request, mood):
+    global selection
+    if mood == "sad":
+        mood_value = 0.15
+    elif mood == "happy":
+        mood_value = 1.0
+    else:
+        mood_value = 0.50
     # the initial mood value on how you want to feel, this will be updatable in the final application
-    mood_value = 1.0
 
     # the music player
     def auth():
@@ -52,16 +57,18 @@ def musicBackEnd(request):
         # imports the json file and then converts it to python readable values
         recommendations = eval(
             recommendations.json()
-                .replace("null", "-999")
-                .replace("false", "False")
-                .replace("true", "True")
+            .replace("null", "-999")
+            .replace("false", "False")
+            .replace("true", "True")
         )["tracks"]
 
         for music_track in recommendations:
             music_data_dictionary["id"].append(music_track["id"])
             track_meta = spotify.track(music_track["id"])
             music_data_dictionary["track_name"].append(track_meta.name)
-            music_data_dictionary["artist_name"].append(track_meta.album.artists[0].name)
+            music_data_dictionary["artist_name"].append(
+                track_meta.album.artists[0].name
+            )
             track_features = spotify.track_audio_features(music_track["id"])
             music_data_dictionary["valence"].append(track_features.valence)
             music_data_dictionary["energy"].append(track_features.energy)
@@ -73,7 +80,7 @@ def musicBackEnd(request):
     dataframe.to_csv("music_dataset.csv", index=False)
 
     csv_to_iterate_over = "music_dataset.csv"
-
+    selection = None
     # add mood iterations here
     with open(csv_to_iterate_over, "r", encoding="utf-8") as csvfile:
         datareader = csv.reader(csvfile)
@@ -83,76 +90,72 @@ def musicBackEnd(request):
 
             if mood_value <= 0.10:
                 if (
-                        (0 <= float(row[3]) <= (mood_value + 0.05))
-                        and (float(row[4]) <= (mood_value + 0.1))
-                        and (float(row[5]) <= (mood_value + 0.2))
+                    (0 <= float(row[3]) <= (mood_value + 0.05))
+                    and (float(row[4]) <= (mood_value + 0.1))
+                    and (float(row[5]) <= (mood_value + 0.2))
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             elif mood_value <= 0.25:
                 if (
-                        ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
-                        and (float(row[4]) <= (mood_value + 0.1))
-                        and (float(row[5]) <= (mood_value + 0.2))
+                    ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
+                    and (float(row[4]) <= (mood_value + 0.1))
+                    and (float(row[5]) <= (mood_value + 0.2))
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             elif mood_value <= 0.50:
                 if (
-                        ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
-                        and (float(row[4]) <= (mood_value + 0.1))
-                        and (float(row[5]) <= mood_value)
+                    ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
+                    and (float(row[4]) <= (mood_value + 0.1))
+                    and (float(row[5]) <= mood_value)
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             elif mood_value <= 0.75:
                 if (
-                        ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
-                        and (float(row[4]) >= (mood_value - 0.1))
-                        and (float(row[5]) >= mood_value)
+                    ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
+                    and (float(row[4]) >= (mood_value - 0.1))
+                    and (float(row[5]) >= mood_value)
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             elif mood_value <= 0.90:
                 if (
-                        ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
-                        and (float(row[4]) >= (mood_value - 0.2))
-                        and (float(row[5]) >= (mood_value - 0.3))
+                    ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
+                    and (float(row[4]) >= (mood_value - 0.2))
+                    and (float(row[5]) >= (mood_value - 0.3))
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             elif mood_value <= 1.00:
                 if (
-                        ((mood_value - 0.1) <= float(row[3]) <= 1)
-                        and (float(row[4]) >= (mood_value - 0.3))
-                        and (float(row[5]) >= (mood_value - 0.4))
+                    ((mood_value - 0.1) <= float(row[3]) <= 1)
+                    and (float(row[4]) >= (mood_value - 0.3))
+                    and (float(row[5]) >= (mood_value - 0.4))
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
             else:
                 selection = str(row[2] + " " + row[1])
                 break
-
     print(selection)
 
+    if selection is None:
+        selection = "Kacey Musgraves - Happy & Sad"
     music = selection
     query = urllib.parse.urlencode({"search_query": music})
     formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query)
 
     results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
-    clip = requests.get(
-        "https://www.youtube.com/watch?v=" + "{}".format(results[0])
-    )
+    clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(results[0]))
     clip2 = "https://www.youtube-nocookie.com/embed/" + "{}".format(results[0])
     youtube_url_id = str(clip2)
 
-    context = {
-        'first_name': youtube_url_id,
-        'artist_and_song': selection
-    }
+    context = {"first_name": youtube_url_id, "artist_and_song": selection}
 
     return render(request, "musicplayer.html", context)
 
 
 def index(request):
-    return render(request, "musicthink.html")
+    return render(request, "index.html")

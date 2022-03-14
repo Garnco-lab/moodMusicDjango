@@ -21,5 +21,5 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    path('musicBackEnd/', views.musicBackEnd, name='musicBackEnd')
+    path('musicBackEnd/<str:mood>', views.musicBackEnd, name='musicBackEnd')
 ]
