@@ -1,10 +1,16 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
+from json import dumps
 import random
 from tqdm import tqdm
 import pandas as pd
 import csv
 import tekore as tk
+import re
+import requests
+import urllib.parse
+import urllib.request
+
 
 def musicBackEnd(request):
     # the initial mood value on how you want to feel, this will be updatable in the final application
@@ -83,7 +89,7 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
-            if mood_value <= 0.25:
+            elif mood_value <= 0.25:
                 if (
                         ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
                         and (float(row[4]) <= (mood_value + 0.1))
@@ -91,7 +97,7 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
-            if mood_value <= 0.50:
+            elif mood_value <= 0.50:
                 if (
                         ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
                         and (float(row[4]) <= (mood_value + 0.1))
@@ -99,7 +105,7 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
-            if mood_value <= 0.75:
+            elif mood_value <= 0.75:
                 if (
                         ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
                         and (float(row[4]) >= (mood_value - 0.1))
@@ -107,7 +113,7 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
-            if mood_value <= 0.90:
+            elif mood_value <= 0.90:
                 if (
                         ((mood_value - 0.05) <= float(row[3]) <= (mood_value + 0.05))
                         and (float(row[4]) >= (mood_value - 0.2))
@@ -115,7 +121,7 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
-            if mood_value <= 1.00:
+            elif mood_value <= 1.00:
                 if (
                         ((mood_value - 0.1) <= float(row[3]) <= 1)
                         and (float(row[4]) >= (mood_value - 0.3))
@@ -123,14 +129,30 @@ def musicBackEnd(request):
                 ):
                     selection = str(row[2] + " " + row[1])
                     break
+            else:
+                selection = str(row[2] + " " + row[1])
+                break
 
     print(selection)
-    file = open('myfile.txt', 'w')
-    file.truncate(0)
-    file.write('Cheese')
-    file.close()
-    return render(request, "musicplayer.html")
+
+    music = selection
+    query = urllib.parse.urlencode({"search_query": music})
+    formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query)
+
+    results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
+    clip = requests.get(
+        "https://www.youtube.com/watch?v=" + "{}".format(results[0])
+    )
+    clip2 = "https://www.youtube-nocookie.com/embed/" + "{}".format(results[0])
+    youtube_url_id = str(clip2)
+
+    context = {
+        'first_name': youtube_url_id,
+        'artist_and_song': selection
+    }
+
+    return render(request, "musicplayer.html", context)
+
 
 def index(request):
     return render(request, "musicthink.html")
-

@@ -122,3 +122,7 @@ STATICFILES_DIRS = (str(BASE_DIR.joinpath('static')),)
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
+
+SESSION_COOKIE_SAMESITE = 'None'

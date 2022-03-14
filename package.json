@@ -1,0 +1,22 @@
+{
+  "name": "moodmusicdjango",
+  "version": "1.0.0",
+  "description": "a music app created in django that picks songs based on how you want to feel.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Garnco-lab/moodMusicDjango.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Garnco-lab/moodMusicDjango/issues"
+  },
+  "homepage": "https://github.com/Garnco-lab/moodMusicDjango#readme",
+  "dependencies": {
+    "prettier": "^2.5.1"
+  }
+}
